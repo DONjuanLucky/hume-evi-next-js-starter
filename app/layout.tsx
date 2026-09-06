@@ -10,7 +10,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 export const metadata: Metadata = {
   title: "DEMO · Hume EVI Voice Agent",
   description:
-    "Public demo of Hume AI Empathic Voice Interface (EVI). Not production product memory.",
+    "Public demo of Hume AI Empathic Voice Interface (EVI) with allowlisted Composio tools. Not production product memory.",
 };
 
 export default function RootLayout({
@@ -35,7 +35,7 @@ export default function RootLayout({
         >
           <div className="fixed top-0 left-0 z-50 px-4 py-2">
             <span className="inline-flex items-center rounded-full bg-amber-500/90 px-2.5 py-0.5 text-xs font-semibold tracking-wide text-black">
-              DEMO · Hume-only (no product memory)
+              DEMO · Hume + allowlisted Composio (no product memory)
             </span>
           </div>
           <Nav />

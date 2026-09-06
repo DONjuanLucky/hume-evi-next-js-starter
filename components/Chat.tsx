@@ -1,11 +1,65 @@
 "use client";
 
-import { VoiceProvider } from "@humeai/voice-react";
+import { VoiceProvider, ToolCallHandler } from "@humeai/voice-react";
 import Messages from "./Messages";
 import Controls from "./Controls";
 import StartCall from "./StartCall";
 import { ComponentRef, useRef } from "react";
 import { toast } from "sonner";
+
+const ALLOWLISTED_COMPOSIO_TOOLS = new Set([
+  "send_gmail_email",
+  "gmail_send_email",
+  "GMAIL_SEND_EMAIL",
+  "create_github_issue",
+  "github_create_an_issue",
+  "GITHUB_CREATE_AN_ISSUE",
+  "create_calendar_event",
+  "googlecalendar_create_event",
+  "GOOGLECALENDAR_CREATE_EVENT",
+]);
+
+const handleToolCall: ToolCallHandler = async (message, send) => {
+  if (!ALLOWLISTED_COMPOSIO_TOOLS.has(message.name)) {
+    return send.error({
+      error: "Tool not allowlisted",
+      code: "composio_not_allowlisted",
+      level: "warn",
+      content:
+        "Demo only supports GMAIL_SEND_EMAIL, GITHUB_CREATE_AN_ISSUE, GOOGLECALENDAR_CREATE_EVENT",
+    });
+  }
+
+  try {
+    const response = await fetch("/api/composio/execute", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: message.name,
+        parameters: message.parameters,
+      }),
+    });
+    const result = await response.json();
+    if (result.success) {
+      return send.success(result.data);
+    }
+    return send.error(
+      result.error ?? {
+        error: "Composio tool error",
+        code: "composio_tool_error",
+        level: "warn",
+        content: "Composio tool call failed",
+      }
+    );
+  } catch {
+    return send.error({
+      error: "Composio tool error",
+      code: "composio_tool_error",
+      level: "warn",
+      content: "There was an error calling the Composio demo tool",
+    });
+  }
+};
 
 export default function ClientComponent({
   accessToken,
@@ -15,9 +69,8 @@ export default function ClientComponent({
   const timeout = useRef<number | null>(null);
   const ref = useRef<ComponentRef<typeof Messages> | null>(null);
 
-  // optional: use configId from environment variable
-  const configId = process.env['NEXT_PUBLIC_HUME_CONFIG_ID'];
-  
+  const configId = process.env["NEXT_PUBLIC_HUME_CONFIG_ID"];
+
   return (
     <div
       className={
@@ -25,6 +78,7 @@ export default function ClientComponent({
       }
     >
       <VoiceProvider
+        onToolCall={handleToolCall}
         onMessage={() => {
           if (timeout.current) {
             window.clearTimeout(timeout.current);
