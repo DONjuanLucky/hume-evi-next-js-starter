@@ -8,8 +8,9 @@ import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 export const metadata: Metadata = {
-  title: "Hume AI - EVI - Next.js Starter",
-  description: "A Next.js starter using Hume AI's Empathic Voice Interface",
+  title: "DEMO · Hume EVI Voice Agent",
+  description:
+    "Public demo of Hume AI Empathic Voice Interface (EVI). Not production product memory.",
 };
 
 export default function RootLayout({
@@ -32,6 +33,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <div className="fixed top-0 left-0 z-50 px-4 py-2">
+            <span className="inline-flex items-center rounded-full bg-amber-500/90 px-2.5 py-0.5 text-xs font-semibold tracking-wide text-black">
+              DEMO · Hume-only (no product memory)
+            </span>
+          </div>
           <Nav />
           {children}
           <Toaster position="top-center" richColors={true} />
