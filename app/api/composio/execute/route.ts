@@ -74,7 +74,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const userId = process.env.COMPOSIO_ENTITY_ID ?? "default";
+    const userId = process.env.COMPOSIO_ENTITY_ID;
+    const connectedAccountId = process.env.COMPOSIO_CONNECTED_ACCOUNT_ID;
+
+    const payload: Record<string, unknown> = {
+      arguments: parameters,
+    };
+    // Prefer explicit connected account; otherwise omit user_id so Composio
+    // uses the project default connection (user_id "default" often has none).
+    if (connectedAccountId) {
+      payload.connected_account_id = connectedAccountId;
+    } else if (userId && userId !== "default") {
+      payload.user_id = userId;
+    }
+
     const res = await fetch(
       `https://backend.composio.dev/api/v3.1/tools/execute/${slug}`,
       {
@@ -83,10 +96,7 @@ export async function POST(req: NextRequest) {
           "Content-Type": "application/json",
           "x-api-key": apiKey,
         },
-        body: JSON.stringify({
-          user_id: userId,
-          arguments: parameters,
-        }),
+        body: JSON.stringify(payload),
       }
     );
 
