@@ -25,7 +25,8 @@ const HUME_NAME_TO_COMPOSIO: Record<string, Allowlisted> = {
 };
 
 function resolveSlug(name: string): Allowlisted | null {
-  const mapped = HUME_NAME_TO_COMPOSIO[name] ?? HUME_NAME_TO_COMPOSIO[name.toLowerCase()];
+  const mapped =
+    HUME_NAME_TO_COMPOSIO[name] ?? HUME_NAME_TO_COMPOSIO[name.toLowerCase()];
   if (mapped) return mapped;
   if ((ALLOWLIST as readonly string[]).includes(name)) return name as Allowlisted;
   return null;
@@ -73,9 +74,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const entityId = process.env.COMPOSIO_ENTITY_ID ?? "default";
+    const userId = process.env.COMPOSIO_ENTITY_ID ?? "default";
     const res = await fetch(
-      `https://backend.composio.dev/api/v2/actions/${slug}/execute`,
+      `https://backend.composio.dev/api/v3.1/tools/execute/${slug}`,
       {
         method: "POST",
         headers: {
@@ -83,14 +84,14 @@ export async function POST(req: NextRequest) {
           "x-api-key": apiKey,
         },
         body: JSON.stringify({
-          entityId,
-          input: parameters,
+          user_id: userId,
+          arguments: parameters,
         }),
       }
     );
 
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
+    if (!res.ok || data?.successful === false) {
       return NextResponse.json(
         {
           success: false,
